@@ -42,14 +42,14 @@ struct ContentView: View {
                 .frame(height: 50)
         }
         .preferredColorScheme(.dark)
-        .onChange(of: selectedItem) { _, newItem in
+        .onChange(of: selectedItem) { newItem in
             loadImage(from: newItem)
         }
         .fullScreenCover(isPresented: $useCamera) {
             CameraView(image: $originalImage)
                 .ignoresSafeArea()
         }
-        .onChange(of: originalImage) { _, _ in
+        .onChange(of: originalImage) { _ in
             applyFilter()
         }
         .overlay {
