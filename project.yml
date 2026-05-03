@@ -1,0 +1,29 @@
+name: RuinFilter
+options:
+  bundleIdPrefix: com.tokyonasu
+  deploymentTarget:
+    iOS: "16.0"
+  xcodeVersion: "16.2"
+settings:
+  base:
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: 1
+    SWIFT_VERSION: "5.9"
+    DEVELOPMENT_TEAM: 83VGKGSQUH
+    CODE_SIGN_STYLE: Automatic
+packages:
+  GoogleMobileAds:
+    url: https://github.com/googleads/swift-package-manager-google-mobile-ads
+    from: "11.13.0"
+targets:
+  RuinFilter:
+    type: application
+    platform: iOS
+    sources: [RuinFilter]
+    dependencies:
+      - package: GoogleMobileAds
+    settings:
+      base:
+        INFOPLIST_FILE: RuinFilter/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.tokyonasu.ruinfilter
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
