@@ -13,7 +13,7 @@ struct ContentView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            NavigationView {
+            NavigationStack {
                 ScrollView {
                     VStack(spacing: 16) {
                         // Image display
