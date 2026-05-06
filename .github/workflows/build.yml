@@ -33,13 +33,19 @@ jobs:
     - name: Generate Xcode project
       run: xcodegen generate
 
+    - name: Select simulator
+      run: |
+        SIM_UDID=$(xcrun simctl list devices available --json | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next(dev["udid"] for runtime in d["devices"].values() for dev in runtime if dev.get("isAvailable") and "iPhone" in dev["name"]))')
+        echo "SIM_UDID=$SIM_UDID" >> $GITHUB_ENV
+        echo "Using simulator $SIM_UDID"
+
     - name: Generate App Store screenshots
       run: |
         set -euo pipefail
         xcodebuild build \
           -scheme RuinFilter \
           -configuration Debug \
-          -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" \
+          -destination "platform=iOS Simulator,id=$SIM_UDID" \
           -derivedDataPath build/ScreenshotDerivedData
 
         APP_PATH=$(find build/ScreenshotDerivedData/Build/Products/Debug-iphonesimulator -name "RuinFilter.app" -maxdepth 2 | head -1)
@@ -48,13 +54,7 @@ jobs:
         capture () {
           DEVICE_NAME="$1"
           PREFIX="$2"
-          UDID=$(xcrun simctl list devices available | awk -v name="$DEVICE_NAME" '$0 ~ name { gsub(/[()]/,"",$2); print $2; exit }')
-          if [ -z "$UDID" ]; then
-            UDID=$(xcrun simctl create "$PREFIX-shot" "$DEVICE_NAME")
-            DELETE_AFTER=1
-          else
-            DELETE_AFTER=0
-          fi
+          UDID="$SIM_UDID"
           xcrun simctl boot "$UDID" || true
           xcrun simctl bootstatus "$UDID" -b
           xcrun simctl install "$UDID" "$APP_PATH"
@@ -69,9 +69,6 @@ jobs:
           done
 
           xcrun simctl shutdown "$UDID" || true
-          if [ "$DELETE_AFTER" = "1" ]; then
-            xcrun simctl delete "$UDID" || true
-          fi
         }
 
         capture "iPhone 17 Pro Max" "iphone"
