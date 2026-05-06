@@ -1,8 +1,6 @@
 name: Build and Upload to App Store
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -28,9 +26,9 @@ jobs:
 
     - name: Set build number
       run: |
-        BUILD_NUM=$(( ${{ github.run_number }} + 0 ))
+        BUILD_NUM=$(TZ=Asia/Tokyo date +%Y%m%d%H%M)
         echo "BUILD_NUM=$BUILD_NUM" >> $GITHUB_ENV
-        sed -i "" "s/CURRENT_PROJECT_VERSION: [0-9]*/CURRENT_PROJECT_VERSION: $BUILD_NUM/" project.yml
+        sed -i "" -E "s/CURRENT_PROJECT_VERSION: \"?[0-9]+\"?/CURRENT_PROJECT_VERSION: \"$BUILD_NUM\"/" project.yml
 
     - name: Generate Xcode project
       run: xcodegen generate
@@ -87,3 +85,9 @@ jobs:
           -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_WDXGY9WX55.p8 \
           -authenticationKeyID WDXGY9WX55 \
           -authenticationKeyIssuerID 2be0734f-943a-4d61-9dc9-5d9045c46fec
+
+    - name: Install PyJWT
+      run: pip3 install --break-system-packages PyJWT requests
+
+    - name: Submit for Review
+      run: python3 scripts/submit.py ${{ env.BUILD_NUM }}

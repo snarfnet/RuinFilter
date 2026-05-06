@@ -38,13 +38,13 @@
     <key>GADApplicationIdentifier</key>
     <string>ca-app-pub-9404799280370656~8530663100</string>
     <key>NSUserTrackingUsageDescription</key>
-    <string>広告の最適化のために使用します</string>
+    <string>広告の表示と改善のために使用します。</string>
     <key>NSPhotoLibraryUsageDescription</key>
-    <string>写真にフィルターを適用するために使用します</string>
+    <string>写真に廃墟フィルターを適用するために使用します。</string>
     <key>NSCameraUsageDescription</key>
-    <string>建物を撮影して廃墟風に加工するために使用します</string>
+    <string>撮影した写真を廃墟風に加工するために使用します。</string>
     <key>NSPhotoLibraryAddUsageDescription</key>
-    <string>加工した写真を保存するために使用します</string>
+    <string>加工した写真を保存するために使用します。</string>
     <key>ITSAppUsesNonExemptEncryption</key>
     <false/>
     <key>SKAdNetworkItems</key>
