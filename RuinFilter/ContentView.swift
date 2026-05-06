@@ -110,8 +110,10 @@ struct ContentView: View {
             if let image = showComparison ? originalImage : filteredImage {
                 Image(uiImage: image)
                     .resizable()
-                    .scaledToFit()
+                    .scaledToFill()
                     .frame(maxWidth: .infinity)
+                    .frame(height: AppRuntime.isScreenshotMode ? 430 : 380)
+                    .clipped()
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                     .overlay(RoundedRectangle(cornerRadius: 10).stroke(RuinTheme.blood.opacity(0.75), lineWidth: 1.4))
                     .overlay(alignment: .topLeading) {
@@ -314,6 +316,7 @@ struct ContentView: View {
         guard AppRuntime.isScreenshotMode else { return }
         let sample = RuinFilterEngine.makeSampleRuinImage()
         originalImage = sample
+        filteredImage = sample
 
         switch AppRuntime.screenshotScreen {
         case "home":
@@ -321,8 +324,12 @@ struct ContentView: View {
             filteredImage = nil
         case "editor":
             selectedStyle = "haunted"
+            originalImage = sample
+            filteredImage = sample
         case "result":
             selectedStyle = "nightmare"
+            originalImage = sample
+            filteredImage = sample
         default:
             selectedStyle = "haunted"
         }
