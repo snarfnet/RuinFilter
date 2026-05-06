@@ -23,7 +23,30 @@ targets:
     info:
       path: RuinFilter/Info.plist
       properties:
+        CFBundleName: 廃墟フィルター
+        CFBundleDisplayName: 廃墟フィルター
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         CFBundleIconName: AppIcon
+        LSRequiresIPhoneOS: true
+        UILaunchScreen: {}
+        UIRequiredDeviceCapabilities:
+          - armv7
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        GADApplicationIdentifier: ca-app-pub-9404799280370656~8530663100
+        NSUserTrackingUsageDescription: 広告の表示と改善のために使用します。
+        NSPhotoLibraryUsageDescription: 写真に廃墟フィルターを適用するために使用します。
+        NSCameraUsageDescription: 撮影した写真を廃墟風に加工するために使用します。
+        NSPhotoLibraryAddUsageDescription: 加工した写真を保存するために使用します。
+        ITSAppUsesNonExemptEncryption: false
+        SKAdNetworkItems:
+          - SKAdNetworkIdentifier: cstr6suwn9.skadnetwork
     dependencies:
       - package: GoogleMobileAds
     settings:
