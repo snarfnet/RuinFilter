@@ -158,14 +158,14 @@ final class RuinFilterEngine {
             cg.drawLinearGradient(gradient, start: .zero, end: CGPoint(x: 0, y: size.height), options: [])
 
             cg.setFillColor(UIColor(red: 0.11, green: 0.10, blue: 0.095, alpha: 1).cgColor)
-            let building = CGRect(x: 145, y: 390, width: 1000, height: 820)
+            let building = CGRect(x: 145, y: 170, width: 1000, height: 860)
             cg.fill(building)
 
             cg.setFillColor(UIColor(red: 0.035, green: 0.035, blue: 0.038, alpha: 1).cgColor)
             for row in 0..<4 {
                 for col in 0..<5 {
                     let x = 210 + col * 180
-                    let y = 470 + row * 150
+                    let y = 250 + row * 150
                     let window = CGRect(x: CGFloat(x), y: CGFloat(y), width: 92, height: 90)
                     cg.fill(window)
                     if (row + col).isMultiple(of: 3) {
@@ -177,19 +177,19 @@ final class RuinFilterEngine {
             }
 
             cg.setFillColor(UIColor(red: 0.035, green: 0.03, blue: 0.03, alpha: 1).cgColor)
-            cg.fill(CGRect(x: 500, y: 920, width: 280, height: 290))
+            cg.fill(CGRect(x: 500, y: 700, width: 280, height: 330))
 
             cg.setStrokeColor(UIColor(red: 0.18, green: 0.18, blue: 0.17, alpha: 1).cgColor)
             cg.setLineWidth(14)
             for i in 0..<11 {
                 let x = CGFloat(80 + i * 116)
-                cg.move(to: CGPoint(x: x, y: 1150))
-                cg.addLine(to: CGPoint(x: x - 130, y: 1360))
+                cg.move(to: CGPoint(x: x, y: 970))
+                cg.addLine(to: CGPoint(x: x - 130, y: 1200))
                 cg.strokePath()
             }
 
             cg.setFillColor(UIColor.black.withAlphaComponent(0.35).cgColor)
-            cg.fill(CGRect(x: 0, y: 1180, width: size.width, height: 460))
+            cg.fill(CGRect(x: 0, y: 1040, width: size.width, height: 600))
 
             cg.setStrokeColor(UIColor.white.withAlphaComponent(0.14).cgColor)
             cg.setLineWidth(2)
