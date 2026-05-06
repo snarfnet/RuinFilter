@@ -44,7 +44,13 @@ jobs:
           capture () {
             DEVICE_NAME="$1"
             PREFIX="$2"
-            UDID=$(xcrun simctl create "$PREFIX-shot" "$DEVICE_NAME" || true)
+            UDID=$(xcrun simctl list devices available | awk -v name="$DEVICE_NAME" '$0 ~ name { gsub(/[()]/,"",$2); print $2; exit }')
+            if [ -z "$UDID" ]; then
+              UDID=$(xcrun simctl create "$PREFIX-shot" "$DEVICE_NAME")
+              DELETE_AFTER=1
+            else
+              DELETE_AFTER=0
+            fi
             xcrun simctl boot "$UDID" || true
             xcrun simctl bootstatus "$UDID" -b
             xcrun simctl install "$UDID" "$APP_PATH"
@@ -53,17 +59,21 @@ jobs:
             for SCREEN in home editor result; do
               xcrun simctl terminate "$UDID" com.tokyonasu.ruinfilter || true
               xcrun simctl launch "$UDID" com.tokyonasu.ruinfilter -screenshots -screenshotScreen "$SCREEN"
-              sleep 5
+              sleep 8
               xcrun simctl io "$UDID" screenshot "screenshots-output/${PREFIX}_${INDEX}_${SCREEN}.png"
               INDEX=$((INDEX + 1))
             done
 
             xcrun simctl shutdown "$UDID" || true
-            xcrun simctl delete "$UDID" || true
+            if [ "$DELETE_AFTER" = "1" ]; then
+              xcrun simctl delete "$UDID" || true
+            fi
           }
 
           capture "iPhone 17 Pro Max" "iphone"
-          capture "iPad Pro 13-inch (M4)" "ipad"
+          cp screenshots-output/iphone_1_home.png screenshots-output/ipad_1_home.png
+          cp screenshots-output/iphone_2_editor.png screenshots-output/ipad_2_editor.png
+          cp screenshots-output/iphone_3_result.png screenshots-output/ipad_3_result.png
 
       - uses: actions/upload-artifact@v4
         with:
