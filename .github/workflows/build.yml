@@ -85,8 +85,14 @@ jobs:
 
     - name: Patch Info.plist build number
       run: |
+        /usr/libexec/PlistBuddy -c "Set :CFBundleIconName AppIcon" RuinFilter/Info.plist || /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string AppIcon" RuinFilter/Info.plist
+        /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.0.1" RuinFilter/Info.plist || /usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string 1.0.1" RuinFilter/Info.plist
         sed -i "" "s|<string>\$(CURRENT_PROJECT_VERSION)</string>|<string>$BUILD_NUM</string>|" RuinFilter/Info.plist
         sed -i "" "/<key>CFBundleVersion<\/key>/{n;s|<string>[^<]*</string>|<string>$BUILD_NUM</string>|;}" RuinFilter/Info.plist
+        echo "Info.plist icon/version check:"
+        /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" RuinFilter/Info.plist
+        /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" RuinFilter/Info.plist
+        /usr/libexec/PlistBuddy -c "Print :CFBundleVersion" RuinFilter/Info.plist
 
     - name: Import Distribution Certificate
       env:
