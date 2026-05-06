@@ -173,11 +173,16 @@ def upload_one_screenshot(set_id, filepath, filename):
             return False
 
     source_checksum = ss_data['attributes'].get('sourceFileChecksum') or checksum
-    r = api('PATCH', f'/appScreenshots/{ss_id}', json={
-        'data': {'type': 'appScreenshots', 'id': ss_id, 'attributes': {'uploaded': True, 'sourceFileChecksum': source_checksum}}
-    })
-    print(f'      Commit {filename}: {r.status_code}')
-    return r.status_code == 200
+    for attempt in range(12):
+        r = api('PATCH', f'/appScreenshots/{ss_id}', json={
+            'data': {'type': 'appScreenshots', 'id': ss_id, 'attributes': {'uploaded': True, 'sourceFileChecksum': source_checksum}}
+        })
+        print(f'      Commit {filename} attempt {attempt + 1}/12: {r.status_code}')
+        if r.status_code == 200:
+            return True
+        time.sleep(10)
+    print(f'      Commit failed for {filename}: {r.text[:500]}')
+    return False
 
 
 def upload_screenshots(version_id):
@@ -213,7 +218,8 @@ def upload_screenshots(version_id):
                 if not os.path.exists(filepath):
                     print(f'      Missing {filepath}')
                     sys.exit(1)
-                upload_one_screenshot(set_id, filepath, filename)
+                if not upload_one_screenshot(set_id, filepath, filename):
+                    sys.exit(1)
 
 
 def assign_build(version_id, build_id):
@@ -258,7 +264,7 @@ def submit_for_review(app_id, version_id):
         print(f'ReviewSubmission created: {submission_id}')
 
     item_added = False
-    for attempt in range(5):
+    for attempt in range(20):
         r = api('POST', '/reviewSubmissionItems', json={
             'data': {
                 'type': 'reviewSubmissionItems',
@@ -268,11 +274,11 @@ def submit_for_review(app_id, version_id):
                 }
             }
         })
-        print(f'Add item attempt {attempt + 1}/5: {r.status_code}')
+        print(f'Add item attempt {attempt + 1}/20: {r.status_code}')
         if r.status_code == 201:
             item_added = True
             break
-        time.sleep(15)
+        time.sleep(30)
     if not item_added:
         print(f'Failed to add item: {r.text[:2000]}')
         sys.exit(1)
@@ -297,5 +303,7 @@ build_id = wait_for_build(app_id)
 set_export_compliance(build_id)
 update_version_localizations(version_id)
 upload_screenshots(version_id)
+print('Waiting for App Store Connect to finish screenshot processing...')
+time.sleep(300)
 assign_build(version_id, build_id)
 submit_for_review(app_id, version_id)
