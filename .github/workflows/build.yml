@@ -134,7 +134,8 @@ jobs:
     - name: Patch archived app icon metadata
       run: |
         set -euo pipefail
-        APP_PATH=$(find build/RuinFilter.xcarchive/Products/Applications -maxdepth 1 -name "*.app" | head -1)
+        APP_PATH=$(find build/RuinFilter.xcarchive -type d -name "*.app" | head -1)
+        test -n "$APP_PATH"
         INFO="$APP_PATH/Info.plist"
         echo "Patching archived app at $APP_PATH"
 
@@ -153,8 +154,9 @@ jobs:
         /usr/libexec/PlistBuddy -c "Add :CFBundleIcons~ipad:CFBundlePrimaryIcon:CFBundleIconFiles array" "$INFO"
         /usr/libexec/PlistBuddy -c "Add :CFBundleIcons~ipad:CFBundlePrimaryIcon:CFBundleIconFiles:0 string AppIcon76x76" "$INFO"
 
-        cp RuinFilter/Assets.xcassets/AppIcon.appiconset/icon_120x120.png "$APP_PATH/AppIcon60x60@2x.png"
-        cp RuinFilter/Assets.xcassets/AppIcon.appiconset/icon_152x152.png "$APP_PATH/AppIcon76x76@2x~ipad.png"
+        ICON_SOURCE="RuinFilter/Assets.xcassets/AppIcon.appiconset/icon_1024x1024.png"
+        sips -z 120 120 "$ICON_SOURCE" --out "$APP_PATH/AppIcon60x60@2x.png"
+        sips -z 152 152 "$ICON_SOURCE" --out "$APP_PATH/AppIcon76x76@2x~ipad.png"
         /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" "$INFO"
 
     - name: Export IPA
