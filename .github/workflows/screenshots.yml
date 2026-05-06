@@ -1,0 +1,71 @@
+name: Generate App Store Screenshots
+
+on:
+  workflow_dispatch:
+
+jobs:
+  screenshots:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          XCODE_APP=$(ls /Applications/ | grep -E "^Xcode_2[6-9]|^Xcode_[3-9][0-9]" | sort -V | tail -1)
+          if [ -n "$XCODE_APP" ]; then
+            sudo xcode-select -s "/Applications/$XCODE_APP"
+          else
+            XCODE_APP=$(ls /Applications/ | grep "^Xcode_" | sort -V | tail -1)
+            sudo xcode-select -s "/Applications/$XCODE_APP"
+          fi
+          xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build for simulator
+        run: |
+          xcodebuild build \
+            -scheme RuinFilter \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" \
+            -derivedDataPath build/DerivedData
+
+      - name: Capture screenshots
+        run: |
+          set -euo pipefail
+          mkdir -p screenshots-output
+          APP_PATH=$(find build/DerivedData/Build/Products/Debug-iphonesimulator -name "RuinFilter.app" -maxdepth 2 | head -1)
+
+          capture () {
+            DEVICE_NAME="$1"
+            PREFIX="$2"
+            UDID=$(xcrun simctl create "$PREFIX-shot" "$DEVICE_NAME" || true)
+            xcrun simctl boot "$UDID" || true
+            xcrun simctl bootstatus "$UDID" -b
+            xcrun simctl install "$UDID" "$APP_PATH"
+
+            INDEX=1
+            for SCREEN in home editor result; do
+              xcrun simctl terminate "$UDID" com.tokyonasu.ruinfilter || true
+              xcrun simctl launch "$UDID" com.tokyonasu.ruinfilter -screenshots -screenshotScreen "$SCREEN"
+              sleep 5
+              xcrun simctl io "$UDID" screenshot "screenshots-output/${PREFIX}_${INDEX}_${SCREEN}.png"
+              INDEX=$((INDEX + 1))
+            done
+
+            xcrun simctl shutdown "$UDID" || true
+            xcrun simctl delete "$UDID" || true
+          }
+
+          capture "iPhone 17 Pro Max" "iphone"
+          capture "iPad Pro 13-inch (M4)" "ipad"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ruinfilter-screenshots
+          path: screenshots-output/*.png

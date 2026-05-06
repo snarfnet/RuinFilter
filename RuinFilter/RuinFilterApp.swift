@@ -8,11 +8,15 @@ struct RuinFilterApp: App {
         WindowGroup {
             ContentView()
                 .onAppear {
-                    GADMobileAds.sharedInstance().start(completionHandler: nil)
+                    if AppRuntime.showsAds {
+                        GADMobileAds.sharedInstance().start(completionHandler: nil)
+                    }
                 }
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                        ATTrackingManager.requestTrackingAuthorization { _ in }
+                    if AppRuntime.showsAds {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                            ATTrackingManager.requestTrackingAuthorization { _ in }
+                        }
                     }
                 }
         }
