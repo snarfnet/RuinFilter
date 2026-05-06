@@ -33,6 +33,49 @@ jobs:
     - name: Generate Xcode project
       run: xcodegen generate
 
+    - name: Generate App Store screenshots
+      run: |
+        set -euo pipefail
+        xcodebuild build \
+          -scheme RuinFilter \
+          -configuration Debug \
+          -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" \
+          -derivedDataPath build/ScreenshotDerivedData
+
+        APP_PATH=$(find build/ScreenshotDerivedData/Build/Products/Debug-iphonesimulator -name "RuinFilter.app" -maxdepth 2 | head -1)
+        mkdir -p screenshots/raw screenshots/appstore
+
+        capture () {
+          DEVICE_NAME="$1"
+          PREFIX="$2"
+          UDID=$(xcrun simctl create "$PREFIX-shot" "$DEVICE_NAME")
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" "$APP_PATH"
+
+          INDEX=1
+          for SCREEN in home editor result; do
+            xcrun simctl terminate "$UDID" com.tokyonasu.ruinfilter || true
+            xcrun simctl launch "$UDID" com.tokyonasu.ruinfilter -screenshots -screenshotScreen "$SCREEN"
+            sleep 5
+            xcrun simctl io "$UDID" screenshot "screenshots/raw/${PREFIX}_${INDEX}_${SCREEN}.png"
+            INDEX=$((INDEX + 1))
+          done
+
+          xcrun simctl shutdown "$UDID" || true
+          xcrun simctl delete "$UDID" || true
+        }
+
+        capture "iPhone 17 Pro Max" "iphone"
+        capture "iPad Pro 13-inch (M4)" "ipad"
+
+        sips -z 2796 1290 screenshots/raw/iphone_1_home.png --out screenshots/appstore/iphone_1_home.png
+        sips -z 2796 1290 screenshots/raw/iphone_2_editor.png --out screenshots/appstore/iphone_2_editor.png
+        sips -z 2796 1290 screenshots/raw/iphone_3_result.png --out screenshots/appstore/iphone_3_result.png
+        sips -z 2732 2048 screenshots/raw/ipad_1_home.png --out screenshots/appstore/ipad_1_home.png
+        sips -z 2732 2048 screenshots/raw/ipad_2_editor.png --out screenshots/appstore/ipad_2_editor.png
+        sips -z 2732 2048 screenshots/raw/ipad_3_result.png --out screenshots/appstore/ipad_3_result.png
+
     - name: Patch Info.plist build number
       run: |
         sed -i "" "s|<string>\$(CURRENT_PROJECT_VERSION)</string>|<string>$BUILD_NUM</string>|" RuinFilter/Info.plist
