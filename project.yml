@@ -20,6 +20,10 @@ targets:
     type: application
     platform: iOS
     sources: [RuinFilter]
+    info:
+      path: RuinFilter/Info.plist
+      properties:
+        CFBundleIconName: AppIcon
     dependencies:
       - package: GoogleMobileAds
     settings:
