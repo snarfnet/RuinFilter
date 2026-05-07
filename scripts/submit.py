@@ -38,7 +38,20 @@ def headers():
 
 
 def api(method, path, **kwargs):
-    return requests.request(method, f'https://api.appstoreconnect.apple.com/v1{path}', headers=headers(), **kwargs)
+    last_response = None
+    for attempt in range(6):
+        last_response = requests.request(
+            method,
+            f'https://api.appstoreconnect.apple.com/v1{path}',
+            headers=headers(),
+            timeout=90,
+            **kwargs
+        )
+        if last_response.status_code not in (401, 500, 502, 503, 504):
+            return last_response
+        print(f'API retry {method} {path} attempt {attempt + 1}/6: {last_response.status_code}')
+        time.sleep(15)
+    return last_response
 
 
 def api_json(method, path, **kwargs):
@@ -57,7 +70,7 @@ def list_all(path):
         r, body = api_json('GET', next_path)
         if r.status_code != 200:
             print(f'List failed {next_path}: {r.status_code} {r.text[:500]}')
-            return all_data
+            sys.exit(1)
         all_data.extend(body.get('data', []))
         next_url = body.get('links', {}).get('next')
         next_path = next_url.split('/v1', 1)[1] if next_url else None
